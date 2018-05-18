@@ -2,20 +2,19 @@
 
 int main(int argc, char *args[])
 {
-    int i;
     // menu
     int pointMenu;
 
     // tape
-    int tape_size = TAPE_SIZE;
+    int tapeSize = TAPE_SIZE;
     bool *tape = NULL;
-    bool *copytape = NULL;
+    bool *copyTapeValue = NULL;
     int tapePointer = 0;
     int start_tapePointer=0;
     bool ifLoadTape = false; //лента не загружена
 
     // command
-    int command_size = COMMAND_SIZE;
+    int commandSize = COMMAND_SIZE;
     struct COMMAND *commands=NULL;
     int numberOfCommands=0;
     bool ifLoadCommand = false;
@@ -31,17 +30,17 @@ int main(int argc, char *args[])
         pointMenu = menu(7);
         switch (pointMenu)
         {
-            case 1:	clearTape(&tape, tape_size, &tapePointer, &copytape);
-                    ifLoadTape = loadTape(args[1], &tape, &tape_size, &tapePointer, &copytape);
+            case 1:	clearTape(&tape, tapeSize, &tapePointer, &copyTapeValue);
+                    ifLoadTape = loadTape(args[1], &tape, &tapeSize, &tapePointer, &copyTapeValue);
                     start_tapePointer = tapePointer;
-                    printTape(stdout, tape, tapePointer, ifLoadTape );
+                    printTape(stdout, tape, tapeSize, tapePointer, ifLoadTape );
                     break;
-            case 2: clearCommands(&commands, command_size, &numberOfCommands);
-                    ifLoadCommand = loadCommands(args[2], &commands, &command_size, &numberOfCommands);
+            case 2: clearCommands(&commands, commandSize, &numberOfCommands);
+                    ifLoadCommand = loadCommands(args[2], &commands, &commandSize, &numberOfCommands);
                     printCommandsList(commands,numberOfCommands, ifLoadCommand);
                     break;
             case 3: if(ifLoadTape)
-                        printTape(stdout, tape, tapePointer, ifLoadTape);
+                        printTape(stdout, tape, tapeSize, tapePointer, ifLoadTape);
                     else
                         printf("Tape wasn't load \n \n");
                     if(ifLoadCommand)
@@ -49,18 +48,18 @@ int main(int argc, char *args[])
                     else
                         printf("Commands wasn't load \n \n");
                     break;
-            case 4: run(args[3], false, tape, &tapePointer, tape_size, ifLoadTape, commands, ifLoadCommand);
+            case 4: run(args[3], false, &tape, &tapePointer, &tapeSize, &copyTapeValue, ifLoadTape, commands, ifLoadCommand);
                     break;
-            case 5: run(args[3], true, tape, &tapePointer, tape_size, ifLoadTape, commands, ifLoadCommand);
+            case 5: run(args[3], true, &tape, &tapePointer, &tapeSize, &copyTapeValue, ifLoadTape, commands, ifLoadCommand);
                     break;
             case 6: if(!ifLoadTape)
                     {
                         printf("\n You need to load tape!!\n\n");
                         break;
                     }
-                    copyTape( copytape, tape, tape_size);
+                    copyTape( copyTapeValue, tape, tapeSize);
                     tapePointer = start_tapePointer;
-                    printTape(stdout, tape, tapePointer, ifLoadTape);
+                    printTape(stdout, tape, tapeSize, tapePointer, ifLoadTape);
                     break;
 
             case 7: break;
@@ -68,8 +67,8 @@ int main(int argc, char *args[])
     } while (pointMenu != 7);
     if( tape != NULL )
         free(tape);
-    if( copytape != NULL )
-        free(copytape);
+    if( copyTapeValue != NULL )
+        free(copyTapeValue);
     if( commands != NULL )
         free(commands);
     printf ("\n See you later :3 \n \n \n");

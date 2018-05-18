@@ -6,30 +6,30 @@
 */
 
 //очистка ленты
-void clearTape(bool **tape, int tape_size, int *tapePointer, bool **copytape)
+void clearTape(bool **tape, int tapeSize, int *tapePointer, bool **copyTapeValue)
 {
 	if(*tape != NULL)
 		free(*tape);
-	*tape = (bool *)calloc(tape_size, sizeof(bool));
+	*tape = (bool *)calloc(tapeSize, sizeof(bool));
 	if(*tape == NULL)
 	{
 		printf("Not enough memory for tape\n");
 		exit(100);
 	}
 
-	if(*copytape != NULL)
-		free(*copytape);
-	*copytape = (bool *)calloc(tape_size, sizeof(bool) );
-	if( *copytape == NULL )
+	if(*copyTapeValue != NULL)
+		free(*copyTapeValue);
+	*copyTapeValue = (bool *)calloc(tapeSize, sizeof(bool) );
+	if( *copyTapeValue == NULL )
 	{
-		printf("Not enough memory for copytape\n");
+		printf("Not enough memory for copyTapeValue\n");
 		exit(101);
 	}
-	*tapePointer = (tape_size)/2;
+	*tapePointer = (tapeSize)/2;
 }
 
 //загрузка ленты
-bool loadTape(char *ftape, bool **tape, int *tape_size, int *tapePointer, bool **copytape)
+bool loadTape(char *fTape, bool **tape, int *tapeSize, int *tapePointer, bool **copyTapeValue)
 {
 	char tmp[81];
 	int lenghtOfString, ret;
@@ -37,13 +37,12 @@ bool loadTape(char *ftape, bool **tape, int *tape_size, int *tapePointer, bool *
 	FILE *in;
 	int v = -1;
 	bool ifLoadTape = false; //лента не загружена
-	bool fright;
 	int resize = TAPE_RESIZE,
-		oldsize = *tape_size;
-	in = fopen(ftape, "rt");
+		oldsize = *tapeSize;
+	in = fopen(fTape, "rt");
 	if (in == NULL)
 	{
-		printf("File %s not found \n", ftape);
+		printf("File %s not found \n", fTape);
 		exit(-2);
 	}
 
@@ -58,14 +57,14 @@ bool loadTape(char *ftape, bool **tape, int *tape_size, int *tapePointer, bool *
 		}
 		if (tmp[i] != ' ')
 		{
-			printf("Error in data file %s/ There are may be only spases or v \n", ftape);
+			printf("Error in data file %s/ There are may be only spases or v \n", fTape);
 			fclose(in);
 			return ifLoadTape;
 		}
 	}//end for
 	if (v == -1)
 	{
-		printf("Error in data file %s/ There are must be v \n", ftape);
+		printf("Error in data file %s/ There are must be v \n", fTape);
 		fclose(in);
 		return ifLoadTape;
 	}
@@ -79,7 +78,7 @@ bool loadTape(char *ftape, bool **tape, int *tape_size, int *tapePointer, bool *
 		}
 		if (ret != 1 || (n != '0' && n != '1'))
 		{
-			printf("Error in data file %s/ There are must be only 0 and 1 \n", ftape);
+			printf("Error in data file %s/ There are must be only 0 and 1 \n", fTape);
 			fclose(in);
 			return ifLoadTape;
 		}
@@ -93,29 +92,13 @@ bool loadTape(char *ftape, bool **tape, int *tape_size, int *tapePointer, bool *
 			unmark(*tape, *tapePointer);
 		}
 
-		fright = right(*tape_size, tapePointer, true);
-		if(!fright)
-		{
-			*tape_size += resize;
-			*tape = realloc((bool *)*tape, *tape_size);
-			if(*tape == NULL)
-			{
-				printf("Not enough memory for tape-2\n");
-				exit(102);
-			}
-			*copytape = realloc((bool *)*copytape, *tape_size);
-			if(*copytape == NULL)
-			{
-				printf("Not enough memory for copytape-2\n");
-				exit(103);
-			}
-		}
+		right(tape, tapeSize, tapePointer, copyTapeValue);
 
 	} while (!feof(in));
 	fclose(in);
 	*tapePointer = oldsize/2 + v;
 	ifLoadTape = true;
-	copyTape(*tape, *copytape, *tape_size);
+	copyTape(*tape, *copyTapeValue, *tapeSize);
 	return ifLoadTape;
 }
 
@@ -132,33 +115,64 @@ void unmark(bool *tape, int tapePointer)
 }
 
 //сдвиг вправо
-bool right(int tape_size, int *tapePointer, bool load)
+void right(bool **tape, int *tapeSize, int *tapePointer, bool **copyTapeValue)
 {
 	(*tapePointer)++;
-	if (*tapePointer >= tape_size)
+	if (*tapePointer < *tapeSize)
+		return;
+	*tapeSize += TAPE_RESIZE;
+	*tape = (bool *)realloc((bool *)*tape, *tapeSize);
+	if(*tape == NULL)
 	{
-		if(!load)
-		{
-			printf("Error.No enable space on right size of the tape \n");
-			(*tapePointer)--;
-		}
-		return false;
-
+		printf("Not enough memory for tape-right\n");
+		exit(102);
 	}
-	return true;
+	*copyTapeValue = realloc((bool *)*copyTapeValue, *tapeSize);
+	if(*copyTapeValue == NULL)
+	{
+		printf("Not enough memory for copyTapeValue-right\n");
+		exit(103);
+	}
 }
 
 //сдвиг влево
-bool left(int *tapePointer)
+void left(bool **tape, int *tapeSize, int *tapePointer, bool **copyTapeValue)
 {
 	(*tapePointer)--;
-	if (*tapePointer < 0)
+	if (*tapePointer >= 0)
+		return;
+	int oldSize = *tapeSize;
+	bool *oldTape = (bool *)calloc(oldSize, sizeof(bool));
+	if(oldTape == NULL)
 	{
-		printf("Error.No enable space on left size of the tape \n");
-		(*tapePointer)++;
-		return false;
+		printf("Not enough memory for oldTape-left\n");
+		exit(104);
 	}
-	return true;
+	copyTape(*tape, oldTape, oldSize);
+	*tapeSize += TAPE_RESIZE;
+	*tape = (bool *)realloc((bool *)*tape, *tapeSize);
+	if(*tape == NULL)
+	{
+		printf("Not enough memory for tape-left\n");
+		exit(105);
+	}
+	//копируем с конца
+	for (int i = oldSize-1, j = *tapeSize-1; i>=0; i--, j--)
+	{
+		*(*tape+j) = *(oldTape+i);
+	}
+	*tapePointer = *tapeSize-oldSize-1;
+	for (int i = 0; i <= *tapePointer; i++)
+	{
+		*(*tape+i) = false;
+	}
+	*copyTapeValue = realloc((bool *)*copyTapeValue, *tapeSize);
+	if(*copyTapeValue == NULL)
+	{
+		printf("Not enough memory for copyTapeValue-left\n");
+		exit(106);
+	}
+	free(oldTape);
 }
 
 void copyTape(bool *what, bool *whereTo, int size)
@@ -170,10 +184,11 @@ void copyTape(bool *what, bool *whereTo, int size)
 	}
 }
 
-void printTape(FILE *wherePrint, bool *tape, int tapePointer, bool ifLoadTape)
+void printTape(FILE *wherePrint, bool *tape, int tapeSize, int tapePointer, bool ifLoadTape)
 {
-	int delta = TAPE_SIZE/2;
-	int i;
+    int width = 70; //ширина поля печати
+	int delta = width/2;
+	int i = tapePointer - delta; //левый край печати
 	if (!ifLoadTape)
 	{
 		printf("\n Tape wasn't load! \n");
@@ -181,12 +196,14 @@ void printTape(FILE *wherePrint, bool *tape, int tapePointer, bool ifLoadTape)
 	}
 
 	fprintf(wherePrint, "%*c \n", delta+1, 'v');
-	for (i = tapePointer - delta; i < tapePointer + delta; i++)
+	for (int k=0; k < width; k++, i++) //k - сколько символов напечатать
 	{
-		if (tape[i])
-			fprintf(wherePrint, "1");
-		else
-			fprintf(wherePrint, ".");
+		if (i<0 || i>tapeSize || tape[i] == false)
+        {
+            fprintf(wherePrint, "%c", '.');
+        }
+        else
+            fprintf(wherePrint, "%c", '1');
 	}
 	fprintf(wherePrint, "\n \n");
 }

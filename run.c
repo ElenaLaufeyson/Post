@@ -2,8 +2,8 @@
 
 //bool step = true - пошагово, а false - сразу
 
-void run(char *fout, bool step,
-		 bool *tape, int *tapePointer, int tape_size, bool ifLoadTape,
+void run(char *fOut, bool step,
+		 bool **tape, int *tapePointer, int *tapeSize, bool **copyTapeValue, bool ifLoadTape,
 		struct COMMAND *commands, bool ifLoadCommand)
 {
 	char save;
@@ -13,6 +13,7 @@ void run(char *fout, bool step,
 	int i = 0; //индекс текущей команды (номер команды - 1)
 	int maxNumberOfCommands = 100; //максимально возможное количество шагов
 	int currentNumberOfCommands = 0;
+	int ret;
 	int key; //код возвращаемой клавиши
 	char stepcommand[5]; // "stop" или "run"
 
@@ -26,21 +27,26 @@ void run(char *fout, bool step,
 	if (save == 'y')
 	{
 		needFile = true;
-		out = fopen(fout, "wt");
+		out = fopen(fOut, "wt");
 		if (out == NULL)
 		{
-			printf("File %s can not be open \n", fout);
+			printf("File %s can not be open \n", fOut);
 			exit(-4);
 		}
 	}
+	fflush(stdin);
+	printf("\n Input maxNumberOfCommands \n");
+	ret = scanf(" %d", &maxNumberOfCommands);
+	if (ret != 1)
+		printf("Wrong value! Default maxNumberOfCommands = 100 \n");
 	fflush(stdin);
 
 	if(step)
 		printf(" <Enter> - next step, stop - stop, run - run\n");
 
-	printTape(stdout, tape, *tapePointer, ifLoadTape);
+	printTape(stdout, *tape, *tapeSize, *tapePointer, ifLoadTape);
 	if (needFile)
-		printTape(out, tape, *tapePointer, ifLoadTape);
+		printTape(out, *tape, *tapeSize, *tapePointer, ifLoadTape);
 
 	while (1)
 	{
@@ -50,20 +56,20 @@ void run(char *fout, bool step,
 		currentCommand = commands[i].command;
 		switch(currentCommand)
 		{
-			case '1':	mark(tape, *tapePointer);
+			case '1':	mark(*tape, *tapePointer);
 						break;
-			case '0':	unmark(tape, *tapePointer);
+			case '0':	unmark(*tape, *tapePointer);
 						break;
-			case '<':	left(tapePointer);
+			case '<':	left(tape, tapeSize, tapePointer, copyTapeValue);
 						break;
-			case '>':	right( tape_size, tapePointer, false);
+			case '>':	right(tape, tapeSize, tapePointer, copyTapeValue);
 						break;
 		}
 		if (currentCommand != '.' && currentCommand != '?')
 		{
-			printTape(stdout, tape, *tapePointer, ifLoadTape);
+			printTape(stdout, *tape, *tapeSize, *tapePointer, ifLoadTape);
 			if (needFile)
-				printTape(out, tape, *tapePointer, ifLoadTape);
+				printTape(out, *tape, *tapeSize, *tapePointer, ifLoadTape);
 		}
 		else if (currentCommand == '.')
 		{
@@ -76,7 +82,7 @@ void run(char *fout, bool step,
 		i = commands[i].condition1;
 		if (currentCommand == '?')
 		{
-			if (*(tape+(*tapePointer)) == true)
+			if (*(*tape+(*tapePointer)) == true)
 				i = commands[i].condition2;
 
 		}
@@ -97,7 +103,8 @@ void run(char *fout, bool step,
 				if(key == ENTER)
 					break;
 				ungetc(key,stdin); //вернуть "первый" символ обратно в поток, чтобы считать все слово
-				scanf(" %s",stepcommand);
+				scanf(" %4s",stepcommand);
+                fflush(stdin);
 				if(!strcmp(stepcommand,"run")) // == 0
 				{
 					step = false;

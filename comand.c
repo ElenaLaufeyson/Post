@@ -9,11 +9,11 @@
 */
 
 //очистка списка команд
-void clearCommands(struct COMMAND **commands, int command_size, int *numberOfCommands)
+void clearCommands(struct COMMAND **commands, int commandSize, int *numberOfCommands)
 {
     if(*commands != NULL)
         free(*commands);
-    *commands = (struct COMMAND *)calloc(command_size, sizeof(struct COMMAND));
+    *commands = (struct COMMAND *)calloc(commandSize, sizeof(struct COMMAND));
     if(*commands == NULL)
     {
         printf("Not enough memory for commands\n");
@@ -23,7 +23,7 @@ void clearCommands(struct COMMAND **commands, int command_size, int *numberOfCom
 }
 
 //загрузка команд
-bool loadCommands(char *fcom,struct COMMAND **commands, int *command_size, int *numberOfCommands)
+bool loadCommands(char *fCom,struct COMMAND **commands, int *commandSize, int *numberOfCommands)
 {
     int ret, number, condition1, condition2, length;
     int resize = COMMAND_RESIZE;
@@ -34,10 +34,10 @@ bool loadCommands(char *fcom,struct COMMAND **commands, int *command_size, int *
     *numberOfCommands = 0;
     int len;
 
-    in = fopen(fcom, "rt");
+    in = fopen(fCom, "rt");
     if (in == NULL)
     {
-        printf("File %s not found \n", fcom);
+        printf("File %s not found \n", fCom);
         exit(-3);
     }
 
@@ -48,7 +48,7 @@ bool loadCommands(char *fcom,struct COMMAND **commands, int *command_size, int *
             break;
         if (number <= 0 || condition1 <= 0 )
         {
-            printf("Error in %s file. There may be only commands from [1..%d] interval \n", fcom, COMMAND_SIZE);
+            printf("Error in %s file. There may be only commands from [1..%d] interval \n", fCom, COMMAND_SIZE);
             fclose(in);
             return ifLoadCommand;
         }
@@ -56,14 +56,14 @@ bool loadCommands(char *fcom,struct COMMAND **commands, int *command_size, int *
         //проверка последовательности введенных команд
         if (*numberOfCommands != number)
         {
-            printf("Error in %s file. Command numbers must be in order \n", fcom);
+            printf("Error in %s file. Command numbers must be in order \n", fCom);
             fclose(in);
             return ifLoadCommand;
         }
-        if (*numberOfCommands > *command_size)
+        if (*numberOfCommands > *commandSize)
         {
-            *command_size += resize;
-            *commands = (struct COMMAND *)realloc((struct COMMAND *)*commands, *command_size);
+            *commandSize += resize;
+            *commands = (struct COMMAND *)realloc((struct COMMAND *)*commands, *commandSize);
         }
         (*commands+number-1)->number = number;
         (*commands+number-1)->command = command;
@@ -78,7 +78,7 @@ bool loadCommands(char *fcom,struct COMMAND **commands, int *command_size, int *
         }
         if (ret != 3)
         {
-            printf("Error in %s file. Command must have a certain structure \n", fcom);
+            printf("Error in %s file. Command must have a certain structure \n", fCom);
             fclose(in);
             return ifLoadCommand;
         }
@@ -91,7 +91,7 @@ bool loadCommands(char *fcom,struct COMMAND **commands, int *command_size, int *
         }
         if (i == length)
         {
-            printf("Error in %s file. Сommand does not exist \n", fcom);
+            printf("Error in %s file. Сommand does not exist \n", fCom);
             fclose(in);
             return ifLoadCommand;
         }
@@ -102,7 +102,7 @@ bool loadCommands(char *fcom,struct COMMAND **commands, int *command_size, int *
             ret = fscanf(in, ",%d", &condition2);
             if (ret != 1 || condition2 <= 0 || condition2 == condition1)
             {
-                printf("Error in %s file. Wrong condition2 \n", fcom);
+                printf("Error in %s file. Wrong condition2 \n", fCom);
                 fclose(in);
                 return ifLoadCommand;
             }
@@ -119,7 +119,7 @@ bool loadCommands(char *fcom,struct COMMAND **commands, int *command_size, int *
     fclose(in);
     if ((*commands+(*numberOfCommands)-1)->command != '.')
     {
-        printf("Error in %s file. No stop-command - . in last command \n", fcom);
+        printf("Error in %s file. No stop-command - . in last command \n", fCom);
         return ifLoadCommand;
     }
 
