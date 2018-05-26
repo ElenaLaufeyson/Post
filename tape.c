@@ -37,8 +37,7 @@ bool loadTape(char *fTape, bool **tape, int *tapeSize, int *tapePointer, bool **
 	FILE *in;
 	int v = -1;
 	bool ifLoadTape = false; //лента не загружена
-	int resize = TAPE_RESIZE,
-		oldsize = *tapeSize;
+	int oldsize = *tapeSize;
 	in = fopen(fTape, "rt");
 	if (in == NULL)
 	{

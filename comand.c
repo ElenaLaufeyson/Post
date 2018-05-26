@@ -48,7 +48,7 @@ bool loadCommands(char *fCom,struct COMMAND **commands, int *commandSize, int *n
             break;
         if (number <= 0 || condition1 <= 0 )
         {
-            printf("Error in %s file. There may be only commands from [1..%d] interval \n", fCom, COMMAND_SIZE);
+            printf("Error in %s file. There may be only commands from [1...] interval \n", fCom);
             fclose(in);
             return ifLoadCommand;
         }

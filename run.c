@@ -10,7 +10,8 @@ void run(char *fOut, bool step,
 	bool needFile = false;
 	FILE *out;
 	char currentCommand; //текущая команда
-	int i = 0; //индекс текущей команды (номер команды - 1)
+	int i = 0, //индекс текущей команды (номер команды - 1)
+	        c; //или condition1, или condittion2
 	int maxNumberOfCommands = 100; //максимально возможное количество шагов
 	int currentNumberOfCommands = 0;
 	int ret;
@@ -79,14 +80,14 @@ void run(char *fOut, bool step,
 			break;
 		}
 
-		i = commands[i].condition1;
+		c = commands[i].condition1;
 		if (currentCommand == '?')
 		{
 			if (*(*tape+(*tapePointer)) == true)
-				i = commands[i].condition2;
+				c = commands[i].condition2;
 
 		}
-		i--;
+		i = c - 1;
 		currentNumberOfCommands++;
 		if (currentNumberOfCommands > maxNumberOfCommands)
 		{
